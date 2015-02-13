@@ -13,6 +13,6 @@ angular.module('myApp', [
 ]).
 config(['$routeProvider', function($routeProvider) {
     $routeProvider.when('/', {templateUrl: 'views/lobby.html', controller:'LobbyCtrl'});
-    $routeProvider.when('/game/:gameId/pId/:playerId/name/:playerName', {templateUrl: 'views/game.html', controller: 'GameCtrl'});
+    $routeProvider.when('/game/:gameId/pId/:playerId/name/:playerName/role/:playerRole', {templateUrl: 'views/game.html', controller: 'GameCtrl'});
     //$routeProvider.otherwise({redirectTo: '/'});
 }]);

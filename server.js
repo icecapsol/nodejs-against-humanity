@@ -38,6 +38,8 @@ var lobbySocket = io
         console.info('lobby socket connect');
         var gameList = Game.list();
         socket.emit('lobbyJoin', gameList);
+        var gameListRunning = Game.listRunning();
+        socket.emit('gamesRunning', gameListRunning);
     })
 
 io.sockets.on('connection', function(socket) {
@@ -66,6 +68,7 @@ io.sockets.on('connection', function(socket) {
         delete players[socket.gameId][socket.playerId];
         Game.departGame(socket.gameId, socket.playerId);
         lobbySocket.emit('gameAdded', Game.list());
+        lobbySocket.emit('gamesRunning', Game.listRunning());
     }
   });
 });
@@ -78,6 +81,7 @@ app.post('/add', function (req, res) {
     var newGame = Game.addGame(req.body);
     res.json(newGame);
     lobbySocket.emit('gameAdded', Game.list());
+    lobbySocket.emit('gamesRunning', Game.listRunning());
 });
 app.get('/gamebyid', function (req, res) { res.json(Game.getGame(req.query.id)); });
 
@@ -100,11 +104,35 @@ app.post('/joingame', function (req, res) {
   game = Game.joinGame(game, { id: req.body.playerId, name: req.body.playerName });
   returnGame(req.body.gameId, res);
   lobbySocket.emit('gameAdded', Game.list());
+  lobbySocket.emit('gamesRunning', Game.listRunning());
+});
+
+app.post('/observegame', function (req, res) {
+  var game = Game.getGame(req.body.gameId);
+  if(!game) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.write(JSON.stringify({ error: "invalid GameId" }));
+    res.end();
+    return null;
+  }
+
+  if(game.observers.length > 30) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.write(JSON.stringify({ error: "too many players" }));
+    res.end();
+    return null;
+  }
+
+  game = Game.observeGame(game, { id: req.body.playerId, name: req.body.playerName });
+  returnGame(req.body.gameId, res);
+  lobbySocket.emit('gameAdded', Game.list());
+  lobbySocket.emit('gamesRunning', Game.listRunning());
 });
 
 app.post('/departgame', function(req, res) {
     Game.departGame(req.body.gameId, req.body.playerId);
     lobbySocket.emit('gameAdded', Game.list());
+    lobbySocket.emit('gamesRunning', Game.listRunning());
     broadcastGame(req.body.gameId);
 });
 

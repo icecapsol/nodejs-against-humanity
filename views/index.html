@@ -31,6 +31,9 @@
           <input type="text" class="form-control" placeholder="enter your name" ng-model="gameSvc.playerName">
         </div>
       </form>
+      <ul class="nav navbar-nav">
+        <li id="aCreatGame" ng-show="!inLobby">Observers {{game.observers.length}}</li>
+      </ul>
     </div>
     </nav>
     <div class="container">

@@ -34,7 +34,7 @@
     <tbody>
       <tr ng-repeat="player in game.players | filter:whiteCardNonNull" ng-class="getWinningCardClass(player.selectedWhiteCardId)">
         <td>
-          <button class="btn btn-default" ng-show="!game.isReadyForReview" ng-click="selectWinner(player.selectedWhiteCardId)">select</button>
+          <button class="btn btn-default" ng-show="!game.isReadyForReview && currentPlayer.isCzar" ng-click="selectWinner(player.selectedWhiteCardId)">select</button>
           <span ng-show="game.isReadyForReview">{{player.name}}</span>
         </td>
         <td class="col-lg-10 col-md-10" style="font-size: 16px; font-weight: bold; line-height: 25px;"><span ng-show="game.winningCardId === player.selectedWhiteCardId">Winner: &nbsp;</span>{{player.selectedWhiteCardId}}</td>
@@ -59,7 +59,7 @@
   </table>
 </div>
 <div id="points" class="row">
-  <div class="well" style="font-size: 20px">Your Awesome Score: <span id="pointsValue">{{currentPlayer.awesomePoints}}</span></div>
+  <div class="well" ng-show="!currentPlayer.isObserver" style="font-size: 20px">Your Awesome Score: <span id="pointsValue">{{currentPlayer.awesomePoints}}</span></div>
 </div>
 <div id="roundPlayers" class="row"> </div>
 <h4>Player Status</h4>

@@ -14,6 +14,12 @@ function removeFromArray(array, item) {
   }
 }
 
+function listRunning() {
+  return toInfo(_.filter(gameList, function(x) {
+    return x.isStarted
+  }));
+}
+
 function list() {
   return toInfo(_.filter(gameList, function(x) {
     return x.players.length < 4 && !x.isStarted
@@ -32,6 +38,7 @@ function toInfo(fullGameList) {
 
 function addGame(game) {
   game.players = [];
+  game.observers = [];
   game.history = [];
   game.isOver = false;
   game.winnerId = null;
@@ -43,7 +50,7 @@ function addGame(game) {
   game.isReadyForReview = false;
   game.pointsToWin = 5;
   gameList.push(game);
-  return game;
+  return game;listAll
 }
 
 function getGame(gameId) {
@@ -55,6 +62,7 @@ function joinGame(game, player) {
     id: player.id,
     name: player.name,
     isReady: false,
+    isObserver: false,
     cards : [],
     selectedWhiteCardId: null,
     awesomePoints: 0,
@@ -84,6 +92,23 @@ function joinGame(game, player) {
     return game;
 }
 
+function observeGame(game, player) {
+    var joiningPlayer = {
+    id: player.id,
+    name: player.name,
+    isReady: true,
+    isObserver: true,
+    cards : [],
+    selectedWhiteCardId: null,
+    awesomePoints: 0,
+    isCzar: false
+    };
+
+    game.observers.push(joiningPlayer);
+    
+    return game;
+}
+
 function departGame(gameId, playerId) {
     var game = getGame(gameId);
     if(game){
@@ -91,7 +116,15 @@ function departGame(gameId, playerId) {
         var departingPlayer = _.find(game.players, function(p){
             return p.id === playerId;
         });
-        removeFromArray(game.players, departingPlayer);
+        if(departingPlayer){
+            removeFromArray(game.players, departingPlayer);
+        }
+        var departingPlayer = _.find(game.observers, function(p){
+            return p.id === playerId;
+        });
+        if(departingPlayer){
+            removeFromArray(game.observers, departingPlayer);
+        }
         if(game.players.length === 0){
             //kill the game
             removeFromArray(gameList, game);
@@ -144,13 +177,8 @@ function roundEnded(game) {
     game.players[0].isReady = false;
   }
     if(game.isOver){
-        game.deck = getDeck();
         _.map(game.players, function(p) {
             p.awesomePoints = 0;
-		  p.cards = [];
-		  for(var i = 0; i < 7; i++) {
-                drawWhiteCard(game, p);
-            }
         });
         game.isOver = false;
     }
@@ -226,12 +254,14 @@ function reset(){
   gameList = [];
 }
 
+exports.listRunning = listRunning;
 exports.list = list;
 exports.listAll = listAll;
 exports.addGame = addGame;
 exports.getGame = getGame;
 exports.getPlayer = getPlayer;
 exports.joinGame = joinGame;
+exports.observeGame = observeGame;
 exports.departGame = departGame;
 exports.readyForNextRound = readyForNextRound;
 exports.reset = reset;

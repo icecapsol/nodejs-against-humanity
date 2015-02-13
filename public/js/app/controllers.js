@@ -27,7 +27,13 @@ angular.module('myApp.controllers', [])
         $scope.joinGame = function(gameId) {
             console.info('joinGame called for gameId ' + gameId);
             GameService.initName();
-            $location.url("/game/"+ gameId + "/pId/" + GameService.playerId + "/name/" + GameService.playerName);
+            $location.url("/game/"+ gameId + "/pId/" + GameService.playerId + "/name/" + GameService.playerName + "/role/player");
+        };
+
+        $scope.observeGame = function(gameId) {
+            console.info('observeGame called for gameId ' + gameId);
+            GameService.initName();
+            $location.url("/game/"+ gameId + "/pId/" + GameService.playerId + "/name/" + GameService.playerName + "/role/observer");
         };
 
         $scope.$on('enterLobby', function() {
@@ -55,7 +61,8 @@ angular.module('myApp.controllers', [])
 
         //ng-show helper functions
         $scope.showNotificationSelectCard = function() {
-            return !$scope.currentPlayer.isCzar &&
+            return !$scope.currentPlayer.isObserver &&
+                !$scope.currentPlayer.isCzar &&
                 !$scope.currentPlayer.selectedWhiteCardId &&
                 $scope.game.isStarted &&
                 !$scope.game.isReadyForScoring
@@ -83,7 +90,8 @@ angular.module('myApp.controllers', [])
         };
 
         $scope.showSelectedWhiteCardList = function() {
-            return ($scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring) ||
+            return (($scope.currentPlayer.isCzar || $scope.currentPlayer.isObserver) &&
+                $scope.game.isStarted && $scope.game.isReadyForScoring) ||
                 $scope.game.isReadyForReview
         };
         //end ng-show helper functions
@@ -193,6 +201,11 @@ angular.module('myApp.controllers', [])
             $scope.currentPlayer = _.find(game.players, function(p) {
                 return p.id === $scope.playerId;
             });
+            if($scope.currentPlayer === undefined){
+                $scope.currentPlayer = _.find(game.observers, function(p) {
+                    return p.id === $scope.playerId;
+                });
+            }
             setProgStyle();
         };
 
@@ -230,7 +243,22 @@ angular.module('myApp.controllers', [])
               });
         };
 
-        joinGame();
+        function observeGame() {
+            GameService.observeGame($routeParams.gameId, $routeParams.playerId, $routeParams.playerName)
+                .then(function(success) {
+                    renderGame(success.data);
+                    initSocket();
+                },
+              function(error) {
+                $scope.gameError = error.data.error;
+              });
+        };
+
+        if($routeParams.playerRole === "player"){
+             joinGame();
+        } else {
+             observeGame();
+        }
         //initSocket();
         $scope.$emit('enterGame');
 
@@ -246,6 +274,7 @@ angular.module('myApp.controllers', [])
         var socket;
 
         $scope.availableGames = [];
+        $scope.runningGames = [];
         $scope.creatingGame = false;
         $scope.gameSvc = GameService;
 
@@ -277,6 +306,12 @@ angular.module('myApp.controllers', [])
                 console.info('gameAdded');
                 console.info(gameList);
                 $scope.availableGames = gameList;
+                $scope.$apply();
+            });
+            socket.on('gamesRunning', function(gameList) {
+                console.info('gamesRunning');
+                console.info(gameList);
+                $scope.runningGames = gameList;
                 $scope.$apply();
             });
         }

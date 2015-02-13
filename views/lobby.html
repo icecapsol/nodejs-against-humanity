@@ -13,5 +13,10 @@
       <button ng-click="joinGame(game.id)" type="button" class="btn btn-primary" style="margin-right: 10px;">Join Game</button>
       <span style="font-size: larger">{{game.name}} - {{game.players}} of 4 players</span>
     </div>
+    <strong id="noGamesRunning" ng-show="runningGames.length == 0">no running games.</strong>
+    <div ng-repeat="game in runningGames" class="well">
+      <button ng-click="observeGame(game.id)" type="button" class="btn btn-primary" style="margin-right: 10px;">Observe Game</button>
+      <span style="font-size: larger">{{game.name}}</span>
+    </div>
   </div>
 </div>

@@ -18,6 +18,7 @@ angular.module('myApp.services', [])
         return {
             playerName: '',
             playerId : pId,
+            playerObserving: false,
             newGameId : guid(),
             currentGameId: undefined,
             initName: function() {
@@ -33,6 +34,9 @@ angular.module('myApp.services', [])
             },
             joinGame: function(gameId, playerId, name) {
                 return $http.post("/joingame", { gameId: gameId, playerId: playerId, playerName: name });
+            },
+            observeGame: function(gameId, playerId, name) {
+                return $http.post("/observegame", { gameId: gameId, playerId: playerId, playerName: name });
             },
             departGame: function(gameId, playerId) {
                 $http.post('/departgame', { gameId: gameId, playerId: playerId});
