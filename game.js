@@ -144,8 +144,13 @@ function roundEnded(game) {
     game.players[0].isReady = false;
   }
     if(game.isOver){
+        game.deck = getDeck();
         _.map(game.players, function(p) {
             p.awesomePoints = 0;
+		  p.cards = [];
+		  for(var i = 0; i < 7; i++) {
+                drawWhiteCard(game, p);
+            }
         });
         game.isOver = false;
     }
